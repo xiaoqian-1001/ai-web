@@ -1,278 +1,78 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>私人AI助手</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        sidebar: '#202123',
-                        mainBg: '#343541',
-                        aiMsgBg: '#40414F',
-                        userMsgBg: '#165DFF',
-                        primary: '#165DFF'
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif']
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
-        .loading-animate::after {
-            content: "";
-            animation: dot 1.2s infinite;
-        }
-        @keyframes dot {
-            0% { content: ""; }
-            33% { content: "."; }
-            66% { content: ".."; }
-            100% { content: "..."; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小钱音乐站 - Game song list</title>
+
+<!-- APlayer -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">
+<script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script>
+
+<!-- MetingJS -->
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+<style>
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+    background: linear-gradient(135deg,#667eea,#764ba2);
+    color: #fff;
+    text-align: center;
+}
+
+h1 {
+    margin-top: 50px;
+    font-size: 30px;
+    font-weight: 800;
+}
+
+p {
+    opacity: 0.85;
+    margin-top: 10px;
+}
+
+.music-box {
+    max-width: 900px;
+    margin: 50px auto;
+    padding: 0 15px;
+}
+
+/* 底部说明 */
+.footer {
+    margin-top: 50px;
+    font-size: 12px;
+    opacity: 0.6;
+}
+</style>
 </head>
-<body class="overflow-hidden select-none bg-mainBg">
-<div class="flex h-screen w-full">
-    <!-- 侧边栏 -->
-    <aside id="sidebar" class="w-64 bg-sidebar text-white flex flex-col transition-all duration-300 fixed md:relative z-20 h-full md:translate-x-0 translate-x-full">
-        <div class="p-3 border-b border-gray-700">
-            <button onclick="clearAllChat()" class="w-full py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-sm flex items-center justify-center gap-2 transition">
-                <i class="ri-add-line"></i> 新建对话
-            </button>
-        </div>
 
-        <!-- 存活稳定模型列表 -->
-        <div class="p-3 border-b border-gray-700">
-            <label class="text-xs text-gray-400 block mb-1">选择对话模型</label>
-            <select id="modelSelect" class="w-full bg-gray-700 rounded px-2 py-2 text-sm outline-none border-none">
-                <option value="qwen2.5">通义千问 全能首选（最稳）</option>
-                <option value="deepseek-chat">DeepSeek 深度问答</option>
-                <option value="glm-4-flash">智谱GLM 长文本理解</option>
-                <option value="doubao-lite">字节豆包 轻量对话</option>
-                <option value="image">🎨 AI文生图绘画生成</option>
-            </select>
-        </div>
+<body>
 
-        <div class="flex-1 overflow-y-auto p-3 text-xs text-gray-400">
-            <p>✅ 完整上下文记忆对话</p>
-            <p>✅ 电脑+手机全设备适配</p>
-            <p>✅ AI绘画图片生成</p>
-            <p>✅ 原生流式打字回复</p>
-            <p>✅ 多接口自动容错兜底</p>
-            <p class="mt-3 text-amber-400">⚠️ 仅限个人自用，禁止公开分享</p>
-        </div>
-    </aside>
+<h1>🎧 小钱音乐站</h1>
+<p>🎮 Game song list | 免费在线听歌</p>
 
-    <!-- 主聊天界面 -->
-    <div class="flex-1 flex flex-col text-white h-screen">
-        <!-- 顶部导航栏 -->
-        <header class="h-14 flex items-center justify-between px-4 border-b border-gray-700">
-            <div class="flex items-center gap-3">
-                <button onclick="toggleSidebar()" class="md:hidden text-xl">
-                    <i class="ri-menu-line"></i>
-                </button>
-                <h1 class="font-medium text-base">私人AI助手</h1>
-            </div>
-            <span id="status" class="text-xs text-gray-400">✅ 服务就绪</span>
-        </header>
+<div class="music-box">
 
-        <!-- 聊天消息容器 -->
-        <main id="chatBox" class="flex-1 overflow-y-auto px-4 md:px-[15%] py-6 space-y-6"></main>
+<!-- 🎵 播放器（你的歌单） -->
+<meting-js
+    server="netease"
+    type="playlist"
+    id="10535657434"
+    fixed="false"
+    autoplay="false"
+    theme="#4a6cf7"
+    loop="all"
+    order="random"
+    preload="auto"
+    volume="0.7">
+</meting-js>
 
-        <!-- 底部输入框区域 -->
-        <footer class="p-4 md:px-[15%]">
-            <div class="relative">
-                <textarea 
-                    id="inputText" 
-                    rows="1" 
-                    placeholder="输入你的问题，文字对话/绘画描述均可..."
-                    class="w-full rounded-xl bg-aiMsgBg outline-none p-4 pr-14 resize-none text-sm max-h-40 border-none transition focus:ring-1 focus:ring-primary"
-                ></textarea>
-                <button onclick="sendMessage()" class="absolute right-3 bottom-3 bg-primary rounded-lg w-9 h-9 flex items-center justify-center hover:opacity-90 transition">
-                    <i class="ri-send-plane-fill"></i>
-                </button>
-            </div>
-            <p class="text-gray-500 text-xs mt-2 text-center">所有对话仅本地浏览器保存，敏感隐私内容请勿输入</p>
-        </footer>
-    </div>
 </div>
 
-<script>
-// ===================== 【全网存活免费接口兜底池】自动轮询，一个挂了自动切下一个 =====================
-const API_NODE_LIST = [
-    "https://free.gpt.ge/v1",
-    "https://api.anyai.chat/v1",
-    "https://openai.good.hidns.vip/v1"
-];
-const API_KEY = "sk-free";
-let chatHistory = [];
-const MAX_HISTORY_LENGTH = 10;
+<div class="footer">
+© 2026 小钱音乐站 | 持续更新中
+</div>
 
-// ===================== 移动端侧边栏开关 =====================
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    sidebar.classList.toggle('translate-x-full');
-}
-
-// ===================== 清空全部对话 =====================
-function clearAllChat() {
-    document.getElementById('chatBox').innerHTML = "";
-    chatHistory = [];
-    document.getElementById('status').innerText = "✅ 对话已清空";
-}
-
-// ===================== 核心发送消息（多节点自动容错） =====================
-async function sendMessage() {
-    const input = document.getElementById('inputText');
-    const model = document.getElementById('modelSelect').value;
-    const content = input.value.trim();
-    
-    if (!content) return;
-    input.value = "";
-    document.getElementById('status').innerText = "🔄 正在思考...";
-    addMessageUI(content, "user");
-
-    if (model === "image") {
-        await generateImage(content);
-        return;
-    }
-
-    // 更新上下文
-    chatHistory.push({ role: "user", content: content });
-    if (chatHistory.length > MAX_HISTORY_LENGTH) chatHistory = chatHistory.slice(-MAX_HISTORY_LENGTH);
-
-    const aiMsgDom = addMessageUI("", "ai");
-    aiMsgDom.classList.add("loading-animate");
-    let fullReply = "";
-    let requestSuccess = false;
-
-    // 接口自动轮询：遍历所有备用节点，直到请求成功
-    for(const API_BASE of API_NODE_LIST){
-        if(requestSuccess) break;
-        try {
-            const response = await fetch(`${API_BASE}/chat/completions`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${API_KEY}`
-                },
-                body: JSON.stringify({
-                    model: model,
-                    messages: chatHistory,
-                    stream: true,
-                    temperature: 0.7
-                }),
-                signal: AbortSignal.timeout(15000)
-            });
-
-            if(!response.ok) throw new Error("节点失效");
-
-            // 流式打字解析
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder("utf-8");
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                const chunk = decoder.decode(value, { stream: true });
-                const allLines = chunk.split('\n').filter(line => line.trim() !== '');
-                for (const line of allLines) {
-                    if (!line.startsWith('data: ')) continue;
-                    const jsonStr = line.replace('data: ', '').trim();
-                    if (jsonStr === '[DONE]') continue;
-                    try {
-                        const data = JSON.parse(jsonStr);
-                        const deltaText = data.choices?.[0]?.delta?.content || '';
-                        if (deltaText) {
-                            fullReply += deltaText;
-                            aiMsgDom.innerText = fullReply;
-                        }
-                    } catch (e) {continue;}
-                }
-            }
-            requestSuccess = true;
-        } catch (err) {
-            console.log("当前节点失效，自动切换下一个备用接口");
-            continue;
-        }
-    }
-
-    if(requestSuccess){
-        aiMsgDom.classList.remove("loading-animate");
-        chatHistory.push({ role: "assistant", content: fullReply });
-        document.getElementById('status').innerText = "✅ 回复完成";
-    }else{
-        aiMsgDom.classList.remove("loading-animate");
-        aiMsgDom.innerText = "❌ 所有免费接口临时维护，请稍后刷新网页重试";
-        document.getElementById('status').innerText = "⚠️ 全部节点临时维护";
-    }
-    scrollToBottom();
-}
-
-// ===================== AI文生图功能 =====================
-async function generateImage(prompt) {
-    const aiMsgDom = addMessageUI("🎨 正在生成图片，请稍候...", "ai");
-    let success = false;
-    for(const API_BASE of API_NODE_LIST){
-        if(success) break;
-        try {
-            const res = await fetch(`${API_BASE}/images/generations`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${API_KEY}`
-                },
-                body: JSON.stringify({prompt: prompt, n: 1, size: "1024x1024"})
-            });
-            const result = await res.json();
-            const imgUrl = result.data?.[0]?.url;
-            if(imgUrl){
-                aiMsgDom.innerHTML = `<p class="mb-2">✅ 图片生成完成</p><img src="${imgUrl}" class="rounded-lg w-full max-w-md shadow-md">`;
-                success = true;
-            }
-        }catch (e){continue;}
-    }
-    if(!success) aiMsgDom.innerText = "❌ 绘图接口临时暂不可用";
-    document.getElementById('status').innerText = "✅ 服务就绪";
-    scrollToBottom();
-}
-
-// ===================== 消息界面渲染 =====================
-function addMessageUI(text, role) {
-    const chatBox = document.getElementById('chatBox');
-    const msgContainer = document.createElement('div');
-    if (role === "user") {
-        msgContainer.className = "flex justify-end";
-        msgContainer.innerHTML = `<div class="bg-userMsgBg rounded-xl p-4 max-w-[85%] md:max-w-[70%] text-white">${text}</div>`;
-    } else {
-        msgContainer.className = "flex justify-start";
-        msgContainer.innerHTML = `<div class="bg-aiMsgBg rounded-xl p-4 max-w-[85%] md:max-w-[70%] text-white">${text}</div>`;
-    }
-    chatBox.appendChild(msgContainer);
-    scrollToBottom();
-    return msgContainer.querySelector('div');
-}
-
-// ===================== 自动滚动到底部 =====================
-function scrollToBottom() {
-    const box = document.getElementById('chatBox');
-    box.scrollTop = box.scrollHeight;
-}
-
-// ===================== 回车发送快捷键 =====================
-document.getElementById('inputText').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
-    }
-});
-</script>
 </body>
 </html>
