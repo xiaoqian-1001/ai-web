@@ -3,46 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>小钱音乐站 - Game song list</title>
+<title>小钱音乐站</title>
 
-<!-- APlayer -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">
-<script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script>
-
-<!-- MetingJS -->
-<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/aplayer/dist/APlayer.min.css">
+<script src="https://unpkg.com/aplayer/dist/APlayer.min.js"></script>
 
 <style>
 body {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
     background: linear-gradient(135deg,#667eea,#764ba2);
+    font-family: -apple-system;
     color: #fff;
     text-align: center;
 }
 
 h1 {
     margin-top: 50px;
-    font-size: 30px;
-    font-weight: 800;
 }
 
-p {
-    opacity: 0.85;
-    margin-top: 10px;
-}
-
-.music-box {
+#player {
     max-width: 900px;
-    margin: 50px auto;
-    padding: 0 15px;
-}
-
-/* 底部说明 */
-.footer {
-    margin-top: 50px;
-    font-size: 12px;
-    opacity: 0.6;
+    margin: 40px auto;
 }
 </style>
 </head>
@@ -50,29 +31,34 @@ p {
 <body>
 
 <h1>🎧 小钱音乐站</h1>
-<p>🎮 Game song list | 免费在线听歌</p>
+<p>🎮 Game song list</p>
 
-<div class="music-box">
+<div id="player"></div>
 
-<!-- 🎵 播放器（你的歌单） -->
-<meting-js
-    server="netease"
-    type="playlist"
-    id="10535657434"
-    fixed="false"
-    autoplay="false"
-    theme="#4a6cf7"
-    loop="all"
-    order="random"
-    preload="auto"
-    volume="0.7">
-</meting-js>
-
-</div>
-
-<div class="footer">
-© 2026 小钱音乐站 | 持续更新中
-</div>
+<script>
+const ap = new APlayer({
+    container: document.getElementById('player'),
+    autoplay: false,
+    theme: '#4a6cf7',
+    loop: 'all',
+    order: 'random',
+    volume: 0.7,
+    audio: [
+        {
+            name: '起风了',
+            artist: '买辣椒也用券',
+            url: 'https://music.163.com/song/media/outer/url?id=1330348068.mp3',
+            cover: 'https://p2.music.126.net/9zQZ.jpg'
+        },
+        {
+            name: '光年之外',
+            artist: '邓紫棋',
+            url: 'https://music.163.com/song/media/outer/url?id=569200213.mp3',
+            cover: 'https://p2.music.126.net/9zQZ.jpg'
+        }
+    ]
+});
+</script>
 
 </body>
 </html>
