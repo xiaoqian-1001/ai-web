@@ -1,468 +1,185 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>极简音乐站</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{
+      min-height:100vh;
+      background:#0f1118;
+      color:#fff;
+      font-family:system-ui,"PingFang SC",sans-serif;
+    }
+    .glass{
+      background:rgba(255,255,255,0.08);
+      backdrop-filter:blur(12px);
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:16px;
+    }
+    .progress-bar{cursor:pointer;}
+    .progress-bar:hover .thumb{transform:scale(1);}
+    .thumb{
+      width:12px;height:12px;
+      background:#a855f7;
+      border-radius:50%;
+      transform:scale(0);
+      transition:.2s;
+    }
+    .song-item:hover{background:rgba(255,255,255,0.06);}
+    .active-song{background:rgba(168,85,247,0.15);border-left:3px solid #a855f7;}
+  </style>
+</head>
+<body>
+<div id="app" class="container mx-auto px-3 py-6 max-w-5xl">
+  <!-- 头部 -->
+  <div class="text-center mb-8">
+    <h1 class="text-[28px] font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+      免费音乐播放器
+    </h1>
+    <p class="text-white/50 text-sm mt-2">全网音源 · 无损播放 · 可拖拽进度</p>
+  </div>
 
-    <link
-      rel="icon"
-      href="resources/favicon.ico"
-      type="image/x-icon"
-      sizes="96x96"
-    />
+  <!-- 搜索 -->
+  <div class="glass p-4 mb-6">
+    <div class="flex gap-3">
+      <input v-model="kw" @keyup.enter="search" type="text" placeholder="输入歌名/歌手搜索"
+        class="flex-1 bg-white/10 border border-white/15 rounded-lg px-4 py-3 text-white outline-none focus:border-purple-400"/>
+      <button @click="search" class="bg-purple-600 hover:bg-purple-700 px-5 py-3 rounded-lg font-medium transition">
+        搜索
+      </button>
+    </div>
+  </div>
 
-    <title>Music Player | devChallenges.io</title>
-
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      body {
-        min-height: 100vh;
-        background: url('resources/gradient-bg.jpg') center/cover no-repeat;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        font-family: 'Arial', sans-serif;
-        padding: 20px;
-      }
-
-      .music-player {
-        background: #121826a6;
-        backdrop-filter: blur(20px);
-        border-radius: 20px;
-        padding: 35px;
-        width: 100%;
-        max-width: 380px;
-        text-align: center;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-      }
-
-      .album-art {
-        width: 100%;
-        max-width: 310px;
-        aspect-ratio: 1;
-        border-radius: 15px;
-        margin: 0 auto 20px;
-        background-image: url('resources/cover-1.jpg');
-        background-size: cover;
-        background-position: center;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-      }
-
-      .song-info {
-        margin-bottom: 25px;
-      }
-
-      .song-title {
-        color: white;
-        font-size: 20px;
-        font-weight: bold;
-        margin-bottom: 8px;
-      }
-
-      .artist-name {
-        color: #b3b3b3;
-        font-size: 15px;
-      }
-
-      .progress-container {
-        margin-bottom: 25px;
-      }
-
-      .progress-bar {
-        width: 100%;
-        height: 4px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 2px;
-        margin-bottom: 10px;
-        position: relative;
-        cursor: pointer;
-      }
-
-      .progress {
-        height: 100%;
-        background: #C93B76;
-        border-radius: 2px;
-        width: 30%;
-        transition: width 0.3s ease;
-      }
-
-      .time-info {
-        display: flex;
-        justify-content: space-between;
-        color: #b3b3b3;
-        font-size: 12px;
-      }
-
-      .controls {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 20px;
-      }
-
-      .control-btn {
-        background: none;
-        border: none;
-        color: white;
-        cursor: pointer;
-        padding: 10px;
-        border-radius: 50%;
-        transition: all 0.3s ease;
-      }
-
-      .control-btn:hover {
-        background: rgba(255, 255, 255, 0.1);
-        transform: scale(1.1);
-      }
-
-      .play-btn {
-        background: #C93B76;
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        box-shadow: 0 5px 15px rgba(201, 59, 118, 0.4);
-      }
-
-      .play-btn:hover {
-        transform: scale(1.05);
-        box-shadow: 0 8px 25px rgba(201, 59, 118, 0.6);
-      }
-
-      .prev-btn, .next-btn {
-        font-size: 20px;
-      }
-
-      .play-btn img, .prev-btn img, .next-btn img {
-        width: 24px;
-        height: 24px;
-      }
-
-      .play-btn img {
-        width: 28px;
-        height: 28px;
-      }
-
-      .author-info {
-        margin-top: 30px;
-        font-size: 14px;
-        text-align: center;
-        color: rgba(255, 255, 255, 0.7);
-      }
-
-      .author-info a {
-        text-decoration: none;
-        color: rgba(255, 255, 255, 0.9);
-      }
-
-      .author-info a:hover {
-        color: white;
-      }
-
-      /* Mobile devices (up to 480px) */
-      @media (max-width: 480px) {
-        body {
-          padding: 15px;
-        }
-
-        .music-player {
-          padding: 25px 20px;
-          border-radius: 15px;
-        }
-
-        .album-art {
-          max-width: 280px;
-          border-radius: 12px;
-          margin-bottom: 15px;
-        }
-
-        .song-title {
-          font-size: 18px;
-          margin-bottom: 6px;
-        }
-
-        .artist-name {
-          font-size: 14px;
-        }
-
-        .controls {
-          gap: 15px;
-        }
-
-        .play-btn {
-          width: 45px;
-          height: 45px;
-        }
-
-        .play-btn img {
-          width: 24px;
-          height: 24px;
-        }
-
-        .prev-btn img, .next-btn img {
-          width: 20px;
-          height: 20px;
-        }
-
-        .author-info {
-          font-size: 12px;
-          margin-top: 20px;
-          padding: 0 10px;
-        }
-      }
-
-      /* Small tablets (481px to 768px) */
-      @media (min-width: 481px) and (max-width: 768px) {
-        .music-player {
-          padding: 30px;
-          max-width: 350px;
-        }
-
-        .album-art {
-          max-width: 290px;
-        }
-
-        .song-title {
-          font-size: 19px;
-        }
-      }
-
-      /* Large tablets and small desktops (769px to 1024px) */
-      @media (min-width: 769px) and (max-width: 1024px) {
-        .music-player {
-          max-width: 400px;
-        }
-
-        .album-art {
-          max-width: 320px;
-        }
-      }
-
-      /* Very small screens (up to 320px) */
-      @media (max-width: 320px) {
-        body {
-          padding: 10px;
-        }
-
-        .music-player {
-          padding: 20px 15px;
-        }
-
-        .album-art {
-          max-width: 250px;
-        }
-
-        .song-title {
-          font-size: 16px;
-        }
-
-        .artist-name {
-          font-size: 13px;
-        }
-
-        .controls {
-          gap: 12px;
-        }
-
-        .play-btn {
-          width: 40px;
-          height: 40px;
-        }
-
-        .play-btn img {
-          width: 20px;
-          height: 20px;
-        }
-
-        .author-info {
-          font-size: 11px;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="music-player">
-      <div class="album-art"></div>
-
-      <div class="song-info">
-        <div class="song-title">Lost in the City Lights</div>
-        <div class="artist-name">Cosmo Sheldrake</div>
-      </div>
-
-      <div class="progress-container">
-        <div class="time-info">
-          <span id="currentTime">2:32</span>
-          <span id="totalTime">4:07</span>
+  <!-- 正在播放 -->
+  <div v-if="playInfo.title" class="glass p-5 mb-6">
+    <div class="flex items-center gap-4">
+      <img :src="playInfo.cover" class="w-24 h-24 rounded-xl object-cover" />
+      <div class="flex-1">
+        <h2 class="text-lg font-medium">{{ playInfo.title }}</h2>
+        <p class="text-white/50 text-sm mt-1">{{ playInfo.author }}</p>
+        
+        <!-- 自定义进度条 -->
+        <div class="progress-bar relative h-1.5 bg-white/20 rounded-full mt-4" @click="seek">
+          <div class="absolute left-0 top-0 h-full bg-purple-500 rounded-full" :style="{width: progress + '%'}"></div>
+          <div class="thumb absolute top-1/2 -translate-y-1/2" :style="{left: progress + '%'}"></div>
         </div>
-        <div class="progress-bar" id="progressBar">
-          <div class="progress" id="progress"></div>
+        <div class="flex justify-between text-xs text-white/40 mt-2">
+          <span>{{formatTime(currentTime)}}</span>
+          <span>{{formatTime(duration)}}</span>
+        </div>
+
+        <!-- 控制按钮 -->
+        <div class="flex items-center gap-4 mt-3">
+          <button @click="togglePlay" class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center">
+            <span v-if="isPlay">⏸</span>
+            <span v-else>▶</span>
+          </button>
         </div>
       </div>
+    </div>
+  </div>
 
-      <div class="controls">
-        <button class="control-btn prev-btn" id="prevBtn">
-          <img src="resources/Stop_and_play_fill-1.svg" alt="Previous" />
-        </button>
-
-        <button class="control-btn play-btn" id="playBtn">
-          <img src="resources/Play_fill.svg" alt="Play" id="playIcon" />
-          <img src="resources/Pause_fill.svg" alt="Pause" id="pauseIcon" style="display: none;" />
-        </button>
-
-        <button class="control-btn next-btn" id="nextBtn">
-          <img src="resources/Stop_and_play_fill_reverse.svg" alt="Next" />
-        </button>
+  <!-- 歌单列表 -->
+  <div class="glass p-4">
+    <div class="text-white/70 mb-3">搜索结果</div>
+    <div class="max-h-[500px] overflow-y-auto">
+      <div v-for="(item,idx) in list" :key="idx"
+        @click="play(item)"
+        class="song-item flex items-center gap-3 p-3 rounded-lg transition"
+        :class="playInfo.id===item.id?'active-song':''">
+        <img :src="item.cover" class="w-12 h-12 rounded-lg object-cover"/>
+        <div class="flex-1 min-w-0">
+          <div class="truncate">{{item.title}}</div>
+          <div class="text-white/50 text-sm truncate">{{item.author}}</div>
+        </div>
       </div>
     </div>
+  </div>
 
-    <audio id="audioPlayer" preload="metadata">
-      <source src="resources/lost-in-city-lights-145038.mp3" type="audio/mpeg">
-      Your browser does not support the audio element.
-    </audio>
+  <!-- 音频标签 -->
+  <audio ref="audio" crossorigin="anonymous"
+    @timeupdate="timeUpdate"
+    @loadedmetadata="loadMeta"
+    @ended="nextPlay">
+</div>
 
-    <script>
-      const audioPlayer = document.getElementById('audioPlayer');
-      const playBtn = document.getElementById('playBtn');
-      const prevBtn = document.getElementById('prevBtn');
-      const nextBtn = document.getElementById('nextBtn');
-      const progressBar = document.getElementById('progressBar');
-      const progress = document.getElementById('progress');
-      const currentTimeEl = document.getElementById('currentTime');
-      const totalTimeEl = document.getElementById('totalTime');
-      const playIcon = document.getElementById('playIcon');
-      const pauseIcon = document.getElementById('pauseIcon');
-      const albumArt = document.querySelector('.album-art');
-      const songTitle = document.querySelector('.song-title');
-      const artistName = document.querySelector('.artist-name');
+<script>
+const {createApp,ref} = Vue;
+createApp({
+  setup(){
+    const kw = ref('');
+    const list = ref([]);
+    const audio = ref(null);
+    const isPlay = ref(false);
+    const currentTime = ref(0);
+    const duration = ref(0);
+    const progress = ref(0);
+    const playInfo = ref({});
 
-      let isPlaying = false;
-      let currentSongIndex = 0;
+    // 格式化时间
+    const formatTime = (s)=>{
+      if(isNaN(s)) return '00:00';
+      let m = Math.floor(s/60);
+      let ss = Math.floor(s%60);
+      return `${String(m).padStart(2,0)}:${String(ss).padStart(2,0)}`;
+    };
 
-      // Song playlist
-      const songs = [
-        {
-          title: "Lost in the City Lights",
-          artist: "Cosmo Sheldrake",
-          src: "resources/lost-in-city-lights-145038.mp3",
-          cover: "resources/cover-1.jpg"
-        },
-        {
-          title: "Forest Lullaby",
-          artist: "Lesfm",
-          src: "resources/forest-lullaby-110624.mp3",
-          cover: "resources/cover-2.jpg"
-        }
-      ];
+    // 搜索 + 解析歌单
+    const search = async ()=>{
+      if(!kw.value)return;
+      const res = await fetch(`https://api.injahow.cn/api/music/search?key=${encodeURIComponent(kw.value)}`);
+      const data = await res.json();
+      list.value = data.data || [];
+    };
 
-      // Format time helper function
-      function formatTime(seconds) {
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    // 播放歌曲
+    const play = async (item)=>{
+      const res = await fetch(`https://api.injahow.cn/api/music/url?id=${item.id}`);
+      const d = await res.json();
+      audio.value.src = d.url;
+      audio.value.play();
+      isPlay.value = true;
+      playInfo.value = item;
+    };
+
+    // 播放/暂停
+    const togglePlay = ()=>{
+      if(isPlay.value){
+        audio.value.pause();
+      }else{
+        audio.value.play();
       }
+      isPlay.value = !isPlay.value;
+    };
 
-      // Load current song
-      function loadSong(index) {
-        const song = songs[index];
-        audioPlayer.src = song.src;
-        songTitle.textContent = song.title;
-        artistName.textContent = song.artist;
-        albumArt.style.backgroundImage = `url('${song.cover}')`;
+    // 进度更新
+    const timeUpdate = ()=>{
+      currentTime.value = audio.value.currentTime;
+      progress.value = (audio.value.currentTime / audio.value.duration) * 100 || 0;
+    };
+    const loadMeta = ()=> duration.value = audio.value.duration;
 
-        // Reset progress
-        progress.style.width = '0%';
-        currentTimeEl.textContent = '0:00';
+    // 点击进度条跳转
+    const seek = (e)=>{
+      const rect = e.currentTarget.getBoundingClientRect();
+      let per = (e.clientX - rect.left) / rect.width;
+      audio.value.currentTime = per * audio.value.duration;
+    };
 
-        // Reset play button
-        isPlaying = false;
-        playIcon.style.display = 'block';
-        pauseIcon.style.display = 'none';
-      }
+    // 下一首
+    const nextPlay = ()=>{
+      let idx = list.value.findIndex(v=>v.id===playInfo.value.id);
+      if(idx < list.value.length-1) play(list.value[idx+1]);
+    };
 
-      // Initialize with first song
-      loadSong(currentSongIndex);
-
-      // Play/Pause functionality
-      playBtn.addEventListener('click', () => {
-        if (isPlaying) {
-          audioPlayer.pause();
-          playIcon.style.display = 'block';
-          pauseIcon.style.display = 'none';
-        } else {
-          audioPlayer.play();
-          playIcon.style.display = 'none';
-          pauseIcon.style.display = 'block';
-        }
-        isPlaying = !isPlaying;
-      });
-
-      // Update progress bar
-      audioPlayer.addEventListener('timeupdate', () => {
-        const currentTime = audioPlayer.currentTime;
-        const duration = audioPlayer.duration;
-
-        if (duration) {
-          const progressPercent = (currentTime / duration) * 100;
-          progress.style.width = progressPercent + '%';
-          currentTimeEl.textContent = formatTime(currentTime);
-        }
-      });
-
-      // Set total time when metadata loads
-      audioPlayer.addEventListener('loadedmetadata', () => {
-        totalTimeEl.textContent = formatTime(audioPlayer.duration);
-      });
-
-      // Click on progress bar to seek
-      progressBar.addEventListener('click', (e) => {
-        const rect = progressBar.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        const width = rect.width;
-        const clickPercent = clickX / width;
-
-        if (audioPlayer.duration) {
-          audioPlayer.currentTime = clickPercent * audioPlayer.duration;
-        }
-      });
-
-
-
-      // Previous and Next button functionality
-      prevBtn.addEventListener('click', () => {
-        currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
-        loadSong(currentSongIndex);
-      });
-
-      nextBtn.addEventListener('click', () => {
-        currentSongIndex = (currentSongIndex + 1) % songs.length;
-        loadSong(currentSongIndex);
-      });
-
-      // Auto-play next song when current song ends
-      audioPlayer.addEventListener('ended', () => {
-        currentSongIndex = (currentSongIndex + 1) % songs.length;
-        loadSong(currentSongIndex);
-        // Optionally auto-play the next song
-        // audioPlayer.play();
-        // isPlaying = true;
-        // playIcon.style.display = 'none';
-        // pauseIcon.style.display = 'block';
-      });
-    </script>
-
-    <div class="author-info">
-      Coded by <a href="#">Ayokanmi Adejola</a> | Challenge by
-      <a href="https://www.devchallenges.io?ref=challenge" target="_blank"
-        >devChallenges.io</a
-      >.
-    </div>
-  </body>
+    return{kw,list,audio,isPlay,currentTime,duration,progress,playInfo,
+      search,play,togglePlay,timeUpdate,loadMeta,seek,nextPlay,formatTime}
+  }
+}).mount('#app')
+</script>
+</body>
 </html>
