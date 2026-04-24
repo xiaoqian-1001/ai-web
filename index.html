@@ -43,17 +43,11 @@
             border-color: rgba(168, 85, 247, 0.3);
             box-shadow: 0 8px 32px rgba(168, 85, 247, 0.1);
         }
-        /* 黑胶唱片旋转动画 */
-        @keyframes recordRotate {
+        @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
-        .record-run {
-            animation: recordRotate 18s linear infinite;
-        }
-        .record-stop {
-            animation-play-state: paused;
-        }
+        .rotate-slow { animation: spin 20s linear infinite; }
         .song-list::-webkit-scrollbar { width: 4px; }
         .song-list::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
         .song-list::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.5); border-radius: 10px; }
@@ -70,7 +64,7 @@
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-        /* 自定义渐变播放按钮 */
+        /* 自定义播放按钮，和主题色调统一 */
         .custom-play-btn {
             width: 60px;
             height: 60px;
@@ -89,8 +83,10 @@
         .custom-play-btn:hover {
             transform: scale(1.05);
         }
-        /* 隐藏原生播放器 */
-        audio { display: none; }
+        /* 隐藏原生 audio 控件 */
+        audio {
+            display: none;
+        }
         .search-input:focus {
             box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
             transform: scale(1.01);
@@ -99,7 +95,9 @@
             background: linear-gradient(135deg, #a855f7, #ec489a);
             box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
         }
-        .song-item { transition: all 0.2s ease; }
+        .song-item {
+            transition: all 0.2s ease;
+        }
         .song-item:hover {
             background: linear-gradient(90deg, rgba(168, 85, 247, 0.2), rgba(236, 72, 153, 0.1));
             transform: translateX(4px);
@@ -108,124 +106,123 @@
             background: linear-gradient(90deg, rgba(168, 85, 247, 0.3), rgba(236, 72, 153, 0.15));
             border-left: 3px solid #a855f7;
         }
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s, transform 0.3s; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; transform: translate(-50%, 20px); }
+        .main-content { padding-top: 20px; }
+        .title-section { margin-top: 20px; margin-bottom: 40px; }
+        .main-title { font-size: 4rem; letter-spacing: -0.02em; }
+        @media (max-width: 768px) {
+            .main-title { font-size: 2.8rem; }
+            .main-content { padding-top: 16px; }
+            .title-section { margin-top: 15px; margin-bottom: 30px; }
+        }
+        .search-input { font-size: 1.1rem; }
+        .song-name { font-size: 1.1rem; }
+        .artist-name { font-size: 0.9rem; }
+        .quick-tag { font-size: 0.9rem; padding: 0.5rem 1rem; }
+        .quality-btn { font-size: 1rem; padding: 0.5rem 1.25rem; }
+        .result-count { font-size: 0.9rem; }
+        .now-playing-title { font-size: 2rem; }
+        @media (max-width: 768px) { .now-playing-title { font-size: 1.5rem; } }
+        
+        .download-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            transition: all 0.3s;
+        }
+        .download-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
         .lyric-line {
             transition: all 0.3s ease;
-            color: rgba(255,255,255,0.35);
+            color: rgba(255,255,255,0.4);
         }
         .lyric-line.active {
             color: #fff;
-            font-size: 1.15rem;
+            font-size: 1.1rem;
             font-weight: 600;
-            text-shadow: 0 0 12px rgba(168, 85, 247, 0.6);
-        }
-        /* 黑胶唱片半圆样式 */
-        .vinyl-record {
-            width: 280px;
-            height: 280px;
-            border-radius: 50%;
-            background: #111;
-            position: relative;
-            box-shadow: 0 0 30px rgba(0,0,0,0.8), 0 0 0 12px #222, 0 0 0 14px #1a1a1a;
-        }
-        .vinyl-record::before {
-            content: '';
-            position: absolute;
-            inset: 15px;
-            border-radius: 50%;
-            background: repeating-radial-gradient(
-                circle,
-                #111 0px,
-                #111 2px,
-                #181818 2px,
-                #181818 4px
-            );
-        }
-        .vinyl-cover {
-            width: 110px;
-            height: 110px;
-            border-radius: 50%;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 2;
-            box-shadow: 0 0 10px #000;
-        }
-        .vinyl-center {
-            width: 16px;
-            height: 16px;
-            background: #333;
-            border-radius: 50%;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 3;
+            text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
         }
     </style>
 </head>
 <body>
-    <div id="app" class="relative z-10 max-w-6xl mx-auto px-4 py-6 md:py-8">
-        <div class="text-center mb-8">
-            <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-purple-400 bg-clip-text text-transparent">
-                小钱音乐网
-            </h1>
-            <p class="text-white/60 mt-2">小钱SVIP音源 · 无损母带级 · 沉浸聆听</p>
+    <div id="app" class="relative z-10 max-w-6xl mx-auto px-4 py-6 md:py-8 main-content">
+        <div class="text-center title-section">
+            <div class="inline-block mb-4">
+                <div class="relative">
+                    <div class="absolute inset-0 blur-2xl bg-purple-600/30 rounded-full"></div>
+                    <h1 class="relative main-title font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-purple-400 bg-clip-text text-transparent">
+                        小钱音乐网
+                    </h1>
+                </div>
+            </div>
+            <p class="text-white/60 text-base">小钱SVIP音源 · 无损母带级 · 沉浸聆听</p>
         </div>
-
-        <div class="glass-modern rounded-2xl p-6 mb-6">
+        
+        <div class="glass-modern rounded-2xl p-6 md:p-7 mb-6">
             <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
-                <div class="text-white/80 flex items-center gap-2">
+                <div class="text-white/80 text-base flex items-center gap-2">
                     <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                     音源选择
                 </div>
-                <button class="px-5 py-2 rounded-full font-semibold text-white quality-btn-active">
-                    小钱SVIP音源
+                <div class="flex gap-3">
+                    <button class="quality-btn px-5 py-2 rounded-full font-semibold transition-all duration-300 quality-btn-active text-white shadow-lg" style="background: linear-gradient(135deg, #a855f7, #ec489a);">
+                        小钱SVIP音源
+                    </button>
+                </div>
+            </div>
+            
+            <div class="flex flex-col md:flex-row gap-4 mb-5">
+                <div class="flex-1 relative">
+                    <input v-model="keyword" @keyup.enter="searchMusic" type="text" 
+                        placeholder="输入歌名、歌手，如「晴天」「周杰伦」「稻香」..." 
+                        class="search-input w-full pl-4 pr-4 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 outline-none transition-all focus:border-purple-500 text-base">
+                </div>
+                <button @click="searchMusic" :disabled="loading"
+                    class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3.5 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-[130px] shadow-lg hover:shadow-purple-500/25 text-base">
+                    <span v-if="loading" class="loader w-5 h-5 border-2"></span>
+                    <span>{{ loading ? '搜索中' : '搜索音乐' }}</span>
                 </button>
             </div>
-            <div class="flex flex-col md:flex-row gap-4">
-                <input v-model="keyword" @keyup.enter="searchMusic" type="text" 
-                    placeholder="输入歌名、歌手..." 
-                    class="flex-1 pl-4 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white outline-none">
-                <button @click="searchMusic" :disabled="loading"
-                    class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3.5 rounded-xl font-semibold">
-                    <span v-if="loading" class="loader w-5 h-5 border-2 mr-2"></span>
-                    {{ loading ? '搜索中' : '搜索音乐' }}
-                </button>
+            
+            <div class="flex flex-wrap gap-2.5">
+                <span v-for="tag in quickTags" :key="tag" @click="keyword = tag; searchMusic()" 
+                    class="quick-tag px-4 py-2 rounded-full bg-white/10 text-white/80 hover:bg-purple-500/40 hover:text-white cursor-pointer transition-all duration-200 backdrop-blur-sm font-medium">
+                        {{ tag }}
+                </span>
             </div>
         </div>
 
-        <!-- 播放区域 + 黑胶唱片 -->
-        <div v-if="currentSong" class="glass-card rounded-2xl p-6 md:p-7 mb-6">
-            <div class="flex flex-col items-center gap-8">
-                <!-- 超大黑胶唱片 -->
-                <div class="vinyl-record record-run" :class="isPlaying ? '' : 'record-stop'">
-                    <img class="vinyl-cover" :src="currentSong.artwork" @error="currentSong.artwork = defaultCover">
-                    <div class="vinyl-center"></div>
+        <div v-if="currentSong" class="glass-card rounded-2xl p-6 md:p-7 mb-6 transition-all duration-500">
+            <div class="flex flex-col items-center justify-center gap-6">
+                <div class="relative">
+                    <img :src="currentSong.artwork" class="w-36 h-36 md:w-40 md:h-40 rounded-2xl shadow-2xl object-cover rotate-slow" 
+                        @error="currentSong.artwork = defaultCover">
                 </div>
-
                 <div class="text-center">
-                    <span class="inline-block px-3 py-1 rounded-full text-sm bg-gradient-to-r from-purple-500 to-pink-500 text-white mb-2">
-                        小钱SVIP专享
-                    </span>
-                    <h2 class="text-2xl font-bold text-white">{{ currentSong.title }}</h2>
-                    <p class="text-white/70 mt-1">{{ currentSong.artist }}</p>
-
-                    <div class="flex justify-center mt-5">
+                    <div class="mb-2">
+                        <span class="inline-block px-3 py-1 rounded-full text-sm bg-gradient-to-r from-purple-500 to-pink-500 text-white mb-2 font-medium shadow-lg">小钱SVIP专享</span>
+                        <h2 class="now-playing-title font-bold text-white mb-1 leading-tight">{{ currentSong.title }}</h2>
+                        <p class="text-white/70 text-base">{{ currentSong.artist }}</p>
+                    </div>
+                    <!-- 自定义播放按钮，替代原生控件 -->
+                    <div class="flex justify-center mt-4">
                         <button @click="togglePlay" class="custom-play-btn">
                             {{ isPlaying ? '⏸' : '▶' }}
                         </button>
                     </div>
+                    <!-- 隐藏的原生audio，只用来播放 -->
+                    <audio ref="audioPlayer" :src="currentPlayUrl" preload="auto" @error="onPlayError" @canplay="onCanPlay" @timeupdate="onTimeUpdate">
                 </div>
             </div>
-
-            <!-- 秒加载歌词区域 -->
-            <div class="mt-8 glass-modern rounded-xl p-4">
+            <!-- 歌词显示区域，强制显示 -->
+            <div class="mt-6 glass-modern rounded-xl p-4">
                 <h3 class="text-white font-semibold mb-3 text-center">歌词</h3>
                 <div class="lyric-container h-48 overflow-y-auto text-center space-y-3" ref="lyricContainer">
                     <div v-if="lyrics.length === 0" class="text-white/50">暂无歌词</div>
                     <div v-for="(line, index) in lyrics" 
-                        :key="index" class="lyric-line py-1"
+                        :key="index" 
+                        class="lyric-line py-1"
                         :class="{ active: currentLyricIndex === index }">
                         {{ line.text }}
                     </div>
@@ -233,173 +230,321 @@
             </div>
         </div>
 
-        <!-- 搜索结果 -->
         <div class="glass-modern rounded-2xl overflow-hidden">
             <div class="px-6 py-5 border-b border-white/10 flex justify-between items-center">
-                <span class="text-white font-semibold text-lg">搜索结果</span>
+                <div class="flex items-center gap-2">
+                    <span class="text-white font-semibold text-lg">搜索结果</span>
+                    <span v-if="songs.length" class="result-count px-2.5 py-0.5 rounded-full text-sm bg-purple-500/30 text-purple-200 font-medium">{{ songs.length }}首</span>
+                </div>
+                <div v-if="songs.length" class="text-white/50 text-sm">点击歌曲即可播放</div>
             </div>
-            <div v-if="loading" class="p-16 text-center">
+            
+            <div v-if="loading && !songs.length" class="p-16 text-center">
                 <div class="loader mx-auto mb-4"></div>
-                <p class="text-white/60">正在寻找音乐...</p>
+                <p class="text-white/60 text-base">正在寻找音乐...</p>
             </div>
+            
+            <div v-else-if="!songs.length && !loading" class="p-16 text-center">
+                <p class="text-white/60 text-lg">输入关键词，开始音乐之旅</p>
+                <p class="text-white/40 text-base mt-2">试试「晴天」「稻香」「夜曲」</p>
+            </div>
+            
             <div v-else class="divide-y divide-white/10 max-h-[550px] overflow-y-auto song-list">
                 <div v-for="(song, idx) in songs" :key="song.id" @click="playSong(song)"
-                    class="song-item p-4 flex items-center gap-4 cursor-pointer"
+                    class="song-item p-4 flex items-center gap-4 cursor-pointer transition-all"
                     :class="currentSong && currentSong.id === song.id ? 'song-playing' : ''">
-                    <div class="text-white/50 w-10 text-center">{{ idx+1 }}</div>
-                    <img :src="song.artwork" class="w-12 h-12 rounded-lg object-cover" @error="song.artwork = defaultCover">
-                    <div class="flex-1 min-w-0">
-                        <div class="text-white font-semibold truncate">{{ song.title }}</div>
-                        <div class="text-white/50 text-sm truncate">{{ song.artist }}</div>
+                    <div class="text-white/50 w-10 text-center font-mono text-base font-medium">{{ String(idx+1).padStart(2, '0') }}</div>
+                    <div class="relative">
+                        <img :src="song.artwork" class="w-14 h-14 rounded-lg object-cover shadow-md" @error="song.artwork = defaultCover">
                     </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="song-name text-white font-semibold truncate">{{ song.title }}</div>
+                        <div class="artist-name text-white/50 text-sm truncate mt-0.5">{{ song.artist }}</div>
+                    </div>
+                    <div class="text-white/40 text-sm hidden sm:block">{{ song.duration }}</div>
                 </div>
             </div>
         </div>
-
-        <audio ref="audioPlayer" :src="currentPlayUrl" preload="auto" 
-            @timeupdate="onTimeUpdate" @canplay="onCanPlay" @error="onPlayError">
+        
+        <div class="text-center mt-6 text-white/30 text-sm">
+            小钱音乐网 · 小钱SVIP尊享音源 · 母带级无损音质
+        </div>
+        
+        <transition name="fade">
+            <div v-if="message" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-black/90 backdrop-blur-md text-white px-5 py-2.5 rounded-full text-sm shadow-2xl z-50 flex items-center gap-2">
+                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                {{ message }}
+            </div>
+        </transition>
     </div>
 
     <script>
-        const { createApp, ref, nextTick } = Vue;
+        const { createApp, ref, watch, nextTick } = Vue;
+        
         const PROXY = 'https://proxy.api.030101.xyz/';
         const urlCache = new Map();
         const lyricCache = new Map();
         const defaultCover = 'https://y.gtimg.cn/music/photo_new/T002R300x300M000000MkMni19ClKG.jpg';
-
+        
         const headers = {
-            referer: "httpsy://y.qq.com",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/106.0.0.0 Safari/537.36"
+            referer: "https://y.qq.com",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36",
+            Cookie: "uin=",
         };
-
-        function formatMusicItem(item) {
-            const albummid = item.album?.mid;
+        
+        function formatMusicItem(_) {
+            const albummid = _.album?.mid;
             return {
-                id: item.id,
-                songmid: item.mid,
-                title: item.title,
-                artist: item.singer?.map(s=>s.name).join("、") || "未知歌手",
-                artwork: albummid ? `https://y.gtimg.cn/music/photo_new/T002R800x800M000${albummid}.jpg` : defaultCover
+                id: _.id || _.songid,
+                songmid: _.mid || _.songmid,
+                title: _.title || _.songname,
+                artist: _.singer?.map(s => s.name).join(", ") || "未知歌手",
+                artwork: albummid ? `https://y.gtimg.cn/music/photo_new/T002R800x800M000${albummid}.jpg` : defaultCover,
+                duration: _.interval ? `${Math.floor(_.interval/60)}:${String(_.interval%60).padStart(2,'0')}` : '03:30'
             };
         }
-
-        // 极速歌词解析
+        
+        // 解析歌词
         function parseLyric(lrc) {
-            if(!lrc) return [];
-            const reg = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
-            return lrc.split('\n').map(line=>{
-                const m = line.match(reg);
-                if(!m) return null;
-                const t = parseInt(m[1])*60 + parseInt(m[2]) + parseInt(m[3])/1000;
-                return {time:t, text:line.replace(reg,"").trim()}
-            }).filter(Boolean);
+            if (!lrc) return [];
+            const lines = lrc.split('\n');
+            const result = [];
+            const timeReg = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
+            
+            lines.forEach(line => {
+                const match = line.match(timeReg);
+                if (!match) return;
+                
+                const minutes = parseInt(match[1]);
+                const seconds = parseInt(match[2]);
+                const ms = parseInt(match[3]);
+                const time = minutes * 60 + seconds + ms / (match[3].length === 3 ? 1000 : 100);
+                const text = line.replace(timeReg, '').trim();
+                
+                if (text) {
+                    result.push({ time, text });
+                }
+            });
+            
+            return result.sort((a, b) => a.time - b.time);
         }
 
-        // 多接口极速并发请求歌词 —— 实现播放瞬间出词
-        async function getLyricFast(songmid, title, artist) {
-            const key = `${songmid}${title}`;
-            if(lyricCache.has(key)) return lyricCache.get(key);
-            const tasks = [
-                axios.get(`${PROXY}https://oiapi.net/api/QQMusicLyric?songmid=${songmid}`),
-                axios.get(`${PROXY}https://lrclib.net/api/search?q=${encodeURIComponent(title+" "+artist)}`)
+        // 多备用歌词接口（重点修改这里）
+        async function getLyric(songmid, title, artist) {
+            const cacheKey = `${songmid}-${title}-${artist}`;
+            if (lyricCache.has(cacheKey)) return lyricCache.get(cacheKey);
+
+            const proxies = [
+                'https://proxy.api.030101.xyz/',
+                'https://cors-anywhere.herokuapp.com/',
+                ''
             ];
-            const res = await Promise.allSettled(tasks);
-            let raw = "";
-            if(res[0].status==="fulfilled" && res[0].value.data?.lyric) raw = res[0].value.data.lyric;
-            if(!raw && res[1].status==="fulfilled" && res[1].value.data?.[0]?.syncedLyrics) raw = res[1].value.data[0].syncedLyrics;
-            const list = parseLyric(raw);
-            lyricCache.set(key, list);
-            return list;
-        }
 
-        async function getPlayUrl(mid) {
-            if(urlCache.has(mid)) return urlCache.get(mid);
-            const res = await axios.get(`${PROXY}https://api.xunhuisi.store/API/QQMusic/Song.php?mid=${mid}`);
-            if(res.data?.code===200) urlCache.set(mid, res.data.music_url);
-            return res.data?.music_url || "";
-        }
+            // 备用接口1：oiapi.net（QQ音乐歌词）
+            const api1 = async (p) => {
+                try {
+                    const url = `${p}https://oiapi.net/api/QQMusicLyric?songmid=${songmid}`;
+                    const r = await axios.get(url, { timeout: 8000 });
+                    return r.data?.lyric || '';
+                } catch (e) { return ''; }
+            };
 
-        async function searchMusic(key) {
-            const data = {req_1:{method:"DoSearchForQQMusicDesktop",module:"music.search.SearchCgiService",param:{query:key,num_per_page:25,page_num:1}}};
-            const res = await axios.post(`${PROXY}https://u.y.qq.com/cgi-bin/musicu.fcg`, data, {headers});
-            return res.data?.req_1?.data?.body?.song?.list?.map(formatMusicItem) || [];
-        }
+            // 备用接口2：lrclib.net（通用歌词）
+            const api2 = async (p) => {
+                try {
+                    const url = `${p}https://lrclib.net/api/search?q=${encodeURIComponent(title + ' ' + artist)}`;
+                    const r = await axios.get(url, { timeout: 8000 });
+                    return r.data?.[0]?.syncedLyrics || '';
+                } catch (e) { return ''; }
+            };
 
+            // 备用接口3：lyrics.ovh（纯文本兜底）
+            const api3 = async (p) => {
+                try {
+                    const url = `${p}https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`;
+                    const r = await axios.get(url, { timeout: 8000 });
+                    const txt = r.data?.lyrics || '';
+                    // 转成伪时间轴（每3秒一行）
+                    return txt.split('\n').filter(x=>x.trim()).map((t,i)=>`[${String(Math.floor(i*3/60)).padStart(2,'0')}:${String(i*3%60).padStart(2,'0')}.00]${t}`).join('\n');
+                } catch (e) { return ''; }
+            };
+
+            // 轮询代理+接口
+            let raw = '';
+            for (const p of proxies) {
+                raw = await api1(p); if (raw) break;
+                raw = await api2(p); if (raw) break;
+                raw = await api3(p); if (raw) break;
+            }
+
+            const parsed = parseLyric(raw);
+            lyricCache.set(cacheKey, parsed);
+            return parsed;
+        }
+        
+        async function searchMusicQuery(query, page) {
+            const postData = {
+                req_1: {
+                    method: "DoSearchForQQMusicDesktop",
+                    module: "music.search.SearchCgiService",
+                    param: {
+                        num_per_page: 25,
+                        page_num: page,
+                        query: query,
+                        search_type: 0,
+                    },
+                },
+            };
+            const targetUrl = 'https://u.y.qq.com/cgi-bin/musicu.fcg';
+            const res = await axios.post(PROXY + targetUrl, postData, { headers, timeout: 15000 });
+            const songList = res.data?.req_1?.data?.body?.song?.list || [];
+            return songList.map(formatMusicItem);
+        }
+        
+        async function getPlayUrl(songmid) {
+            if (urlCache.has(songmid)) return urlCache.get(songmid);
+            try {
+                const url = `https://api.xunhuisi.store/API/QQMusic/Song.php?mid=${songmid}`;
+                const response = await axios.get(PROXY + url, {
+                    headers: { 'User-Agent': 'Mozilla/5.0', 'Referer': 'https://y.qq.com', 'Cookie': 'uin=' },
+                    timeout: 10000
+                });
+                if (response.data && response.data.code === 200 && response.data.music_url) {
+                    urlCache.set(songmid, response.data.music_url);
+                    return response.data.music_url;
+                }
+                return null;
+            } catch (error) {
+                console.error('获取播放链接错误:', error);
+                return null;
+            }
+        }
+        
         createApp({
-            setup(){
-                const keyword = ref("");
+            setup() {
+                const keyword = ref('');
                 const songs = ref([]);
                 const loading = ref(false);
                 const currentSong = ref(null);
-                const currentPlayUrl = ref("");
+                const currentPlayUrl = ref('');
+                const playError = ref('');
+                const message = ref('');
                 const lyrics = ref([]);
                 const currentLyricIndex = ref(0);
-                const audioPlayer = ref(null);
                 const lyricContainer = ref(null);
+                const audioPlayer = ref(null);
                 const isPlaying = ref(false);
+                
+                const quickTags = ['晴天', '稻香', '夜曲', '七里香', '告白气球', '海阔天空', '起风了', '孤勇者'];
 
-                // 搜索
-                const searchMusicFn = async ()=>{
-                    if(!keyword.value.trim()) return;
-                    loading.value = true;
-                    songs.value = await searchMusic(keyword.value);
-                    loading.value = false;
+                const showMsg = (msg) => {
+                    message.value = msg;
+                    setTimeout(() => message.value = '', 2000);
                 };
 
-                // 播放 + 秒加载歌词
-                const playSong = async (song)=>{
+                const searchMusic = async () => {
+                    if (!keyword.value.trim()) {
+                        showMsg('输入歌名或歌手再搜索吧');
+                        return;
+                    }
+                    
+                    loading.value = true;
+                    songs.value = [];
+                    playError.value = '';
+                    
+                    try {
+                        const results = await searchMusicQuery(keyword.value, 1);
+                        songs.value = results;
+                        if (songs.value.length === 0) {
+                            showMsg('未找到相关歌曲，试试其他关键词');
+                        } else {
+                            showMsg(`找到 ${songs.value.length} 首小钱SVIP专属歌曲`);
+                        }
+                    } catch (err) {
+                        console.error('搜索错误:', err);
+                        showMsg('搜索失败，请稍后重试');
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+                
+                const playSong = async (song) => {
+                    if (!song) return;
+                    
                     currentSong.value = song;
+                    playError.value = '';
                     lyrics.value = [];
                     currentLyricIndex.value = 0;
                     isPlaying.value = false;
-                    // 歌词优先并发加载，做到打开就有
-                    const lyricP = getLyricFast(song.songmid, song.title, song.artist);
+                    
+                    showMsg(`小钱SVIP音源加载中: ${song.title}`);
+                    
                     const url = await getPlayUrl(song.songmid);
-                    currentPlayUrl.value = url;
-                    // 直接赋值歌词，不等待，极致提速
-                    lyrics.value = await lyricP;
-                    nextTick(()=>{
-                        if(audioPlayer.value){
-                            audioPlayer.value.play().then(()=>isPlaying.value=true);
-                        }
-                    });
+                    if (url) {
+                        currentPlayUrl.value = url;
+                        // 传title和artist给多接口歌词
+                        lyrics.value = await getLyric(song.songmid, song.title, song.artist);
+                        nextTick(() => {
+                            if (audioPlayer.value) {
+                                audioPlayer.value.play().then(() => {
+                                    isPlaying.value = true;
+                                }).catch(e => {
+                                    console.error('播放失败:', e);
+                                });
+                            }
+                        });
+                    } else {
+                        playError.value = '小钱SVIP音源获取失败';
+                        showMsg('小钱SVIP音源获取失败');
+                    }
                 };
-
-                // 播放暂停
-                const togglePlay = ()=>{
-                    if(!audioPlayer.value) return;
-                    if(isPlaying.value){
+                
+                // 自定义播放/暂停
+                const togglePlay = () => {
+                    if (!audioPlayer.value) return;
+                    if (isPlaying.value) {
                         audioPlayer.value.pause();
                         isPlaying.value = false;
-                    }else{
+                    } else {
                         audioPlayer.value.play();
                         isPlaying.value = true;
                     }
                 };
-
-                // 歌词同步
-                const onTimeUpdate = ()=>{
-                    if(!lyrics.value.length) return;
-                    const t = audioPlayer.value.currentTime;
-                    let idx = 0;
-                    for(let i=0;i<lyrics.value.length;i++){
-                        if(t >= lyrics.value[i].time) idx = i;
+                
+                // 时间更新，同步歌词
+                const onTimeUpdate = () => {
+                    if (!audioPlayer.value || lyrics.value.length === 0) return;
+                    
+                    const currentTime = audioPlayer.value.currentTime;
+                    let index = 0;
+                    
+                    for (let i = 0; i < lyrics.value.length; i++) {
+                        if (currentTime >= lyrics.value[i].time) {
+                            index = i;
+                        } else {
+                            break;
+                        }
                     }
-                    currentLyricIndex.value = idx;
-                    if(lyricContainer.value){
-                        lyricContainer.value.scrollTop = idx * 40 - lyricContainer.value.clientHeight / 2;
+                    
+                    currentLyricIndex.value = index;
+                    
+                    // 自动滚动歌词
+                    if (lyricContainer.value) {
+                        const container = lyricContainer.value;
+                        const lineHeight = 36;
+                        container.scrollTop = index * lineHeight - container.clientHeight / 2;
                     }
                 };
-
-                const onCanPlay = ()=>{};
-                const onPlayError = ()=>{};
-
+                
+                const onCanPlay = () => { playError.value = ''; };
+                const onPlayError = () => { if (currentPlayUrl.value) playError.value = '播放失败，小钱SVIP音源可能暂时不可用'; };
+                
                 return {
-                    keyword,songs,loading,currentSong,currentPlayUrl,
-                    lyrics,currentLyricIndex,audioPlayer,lyricContainer,isPlaying,
-                    defaultCover,searchMusic:searchMusicFn,playSong,togglePlay,
-                    onTimeUpdate,onCanPlay,onPlayError
-                }
+                    keyword, songs, loading, currentSong, currentPlayUrl, playError, message,
+                    lyrics, currentLyricIndex, lyricContainer, audioPlayer, isPlaying,
+                    defaultCover, quickTags,
+                    searchMusic, playSong, togglePlay, onPlayError, onCanPlay, onTimeUpdate
+                };
             }
         }).mount('#app');
     </script>
