@@ -1,9 +1,0 @@
-{
-  "name": "小钱音乐",
-  "short_name": "音乐",
-  "start_url": "./index.html",
-  "display": "standalone",
-  "background_color": "#020617",
-  "theme_color": "#7c3aed",
-  "icons": []
-}
