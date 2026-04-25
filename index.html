@@ -1,407 +1,313 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>小钱音乐网 | 小杜专属八音盒</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
-    <style>
-        * { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-        body {
-            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-            min-height: 100vh;
-            position: relative;
-        }
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.15) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 60%);
-            pointer-events: none;
-            z-index: 0;
-        }
-        .glass-modern {
-            background: rgba(15, 12, 41, 0.6);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .glass-card:hover {
-            border-color: rgba(168, 85, 247, 0.3);
-            box-shadow: 0 8px 32px rgba(168, 85, 247, 0.1);
-        }
-        /* 黑胶唱片旋转动画 */
-        @keyframes recordRotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        .record-run {
-            animation: recordRotate 18s linear infinite;
-        }
-        .record-stop {
-            animation-play-state: paused;
-        }
-        .song-list::-webkit-scrollbar { width: 4px; }
-        .song-list::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
-        .song-list::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.5); border-radius: 10px; }
-        .song-list::-webkit-scrollbar-thumb:hover { background: rgba(168, 85, 247, 0.8); }
-        .lyric-container::-webkit-scrollbar { width: 4px; }
-        .lyric-container::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
-        .lyric-container::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.5); border-radius: 10px; }
-        .lyric-container::-webkit-scrollbar-thumb:hover { background: rgba(168, 85, 247, 0.8); }
-        .loader {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(168, 85, 247, 0.3);
-            border-top-color: #a855f7;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        /* 自定义渐变播放按钮 */
-        .custom-play-btn {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #a855f7, #ec489a);
-            border: none;
-            color: white;
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
-            transition: transform 0.2s;
-        }
-        .custom-play-btn:hover {
-            transform: scale(1.05);
-        }
-        /* 隐藏原生播放器 */
-        audio { display: none; }
-        .search-input:focus {
-            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
-            transform: scale(1.01);
-        }
-        .quality-btn-active {
-            background: linear-gradient(135deg, #a855f7, #ec489a);
-            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
-        }
-        .song-item { transition: all 0.2s ease; }
-        .song-item:hover {
-            background: linear-gradient(90deg, rgba(168, 85, 247, 0.2), rgba(236, 72, 153, 0.1));
-            transform: translateX(4px);
-        }
-        .song-playing {
-            background: linear-gradient(90deg, rgba(168, 85, 247, 0.3), rgba(236, 72, 153, 0.15));
-            border-left: 3px solid #a855f7;
-        }
-        .lyric-line {
-            transition: all 0.3s ease;
-            color: rgba(255,255,255,0.35);
-        }
-        .lyric-line.active {
-            color: #fff;
-            font-size: 1.15rem;
-            font-weight: 600;
-            text-shadow: 0 0 12px rgba(168, 85, 247, 0.6);
-        }
-        /* 黑胶唱片半圆样式 */
-        .vinyl-record {
-            width: 280px;
-            height: 280px;
-            border-radius: 50%;
-            background: #111;
-            position: relative;
-            box-shadow: 0 0 30px rgba(0,0,0,0.8), 0 0 0 12px #222, 0 0 0 14px #1a1a1a;
-        }
-        .vinyl-record::before {
-            content: '';
-            position: absolute;
-            inset: 15px;
-            border-radius: 50%;
-            background: repeating-radial-gradient(
-                circle,
-                #111 0px,
-                #111 2px,
-                #181818 2px,
-                #181818 4px
-            );
-        }
-        .vinyl-cover {
-            width: 110px;
-            height: 110px;
-            border-radius: 50%;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 2;
-            box-shadow: 0 0 10px #000;
-        }
-        .vinyl-center {
-            width: 16px;
-            height: 16px;
-            background: #333;
-            border-radius: 50%;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 3;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小钱音乐 Final v2</title>
+
+<link rel="manifest" href="manifest.json">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<style>
+body{
+background: radial-gradient(circle,#1e1b4b,#020617);
+color:#fff;
+overflow-x:hidden;
+}
+.scroll::-webkit-scrollbar{display:none}
+.card:hover{transform:scale(1.05);transition:.3s}
+
+/* 歌词渐隐 */
+.lyric-mask{
+mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+}
+</style>
 </head>
+
 <body>
-    <div id="app" class="relative z-10 max-w-6xl mx-auto px-4 py-6 md:py-8">
-        <div class="text-center mb-8">
-            <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-purple-400 bg-clip-text text-transparent">
-                小钱音乐网
-            </h1>
-            <p class="text-white/60 mt-2">小钱SVIP音源 · 无损母带级 · 沉浸聆听</p>
-        </div>
+<div id="app" class="pb-28 max-w-6xl mx-auto">
 
-        <div class="glass-modern rounded-2xl p-6 mb-6">
-            <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
-                <div class="text-white/80 flex items-center gap-2">
-                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                    音源选择
-                </div>
-                <button class="px-5 py-2 rounded-full font-semibold text-white quality-btn-active">
-                    小钱SVIP音源
-                </button>
-            </div>
-            <div class="flex flex-col md:flex-row gap-4">
-                <input v-model="keyword" @keyup.enter="searchMusic" type="text" 
-                    placeholder="输入歌名、歌手..." 
-                    class="flex-1 pl-4 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white outline-none">
-                <button @click="searchMusic" :disabled="loading"
-                    class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3.5 rounded-xl font-semibold">
-                    <span v-if="loading" class="loader w-5 h-5 border-2 mr-2"></span>
-                    {{ loading ? '搜索中' : '搜索音乐' }}
-                </button>
-            </div>
-        </div>
+<!-- 顶部 -->
+<div class="p-4">
+<h1 class="text-3xl font-bold text-purple-400">🎧 小钱音乐 Final</h1>
+</div>
 
-        <!-- 播放区域 + 黑胶唱片 -->
-        <div v-if="currentSong" class="glass-card rounded-2xl p-6 md:p-7 mb-6">
-            <div class="flex flex-col items-center gap-8">
-                <!-- 超大黑胶唱片 -->
-                <div class="vinyl-record record-run" :class="isPlaying ? '' : 'record-stop'">
-                    <img class="vinyl-cover" :src="currentSong.artwork" @error="currentSong.artwork = defaultCover">
-                    <div class="vinyl-center"></div>
-                </div>
+<!-- 搜索 -->
+<div class="px-4">
+<input v-model="keyword" @keyup.enter="search"
+class="w-full p-3 rounded bg-white/10 border border-white/10"
+placeholder="搜索音乐...">
+</div>
 
-                <div class="text-center">
-                    <span class="inline-block px-3 py-1 rounded-full text-sm bg-gradient-to-r from-purple-500 to-pink-500 text-white mb-2">
-                        小钱SVIP专享
-                    </span>
-                    <h2 class="text-2xl font-bold text-white">{{ currentSong.title }}</h2>
-                    <p class="text-white/70 mt-1">{{ currentSong.artist }}</p>
+<!-- 榜单 -->
+<div class="px-4 mt-6">
+<h2 class="mb-3">🔥 热门榜单</h2>
+<div class="flex gap-4 overflow-x-auto scroll">
+<div v-for="s in hotSongs" @click="play(s)"
+class="min-w-[140px] cursor-pointer">
+<img :src="s.artwork" class="h-36 w-full object-cover rounded">
+<div class="text-sm truncate">{{s.title}}</div>
+<div class="text-xs text-white/50">{{s.artist}}</div>
+</div>
+</div>
+</div>
 
-                    <div class="flex justify-center mt-5">
-                        <button @click="togglePlay" class="custom-play-btn">
-                            {{ isPlaying ? '⏸' : '▶' }}
-                        </button>
-                    </div>
-                </div>
-            </div>
+<!-- 搜索结果 -->
+<div class="px-4 mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+<div v-for="s in songs" @click="play(s)"
+class="card p-2 bg-white/5 rounded cursor-pointer">
+<img :src="s.artwork" class="h-32 w-full object-cover rounded mb-2">
+<div class="text-sm truncate">{{s.title}}</div>
+<div class="text-xs text-white/50">{{s.artist}}</div>
+</div>
+</div>
 
-            <!-- 秒加载歌词区域 -->
-            <div class="mt-8 glass-modern rounded-xl p-4">
-                <h3 class="text-white font-semibold mb-3 text-center">歌词</h3>
-                <div class="lyric-container h-48 overflow-y-auto text-center space-y-3" ref="lyricContainer">
-                    <div v-if="lyrics.length === 0" class="text-white/50">暂无歌词</div>
-                    <div v-for="(line, index) in lyrics" 
-                        :key="index" class="lyric-line py-1"
-                        :class="{ active: currentLyricIndex === index }">
-                        {{ line.text }}
-                    </div>
-                </div>
-            </div>
-        </div>
+<!-- 歌词（沉浸式） -->
+<div v-if="lyrics.length" class="fixed inset-0 flex justify-center items-center pointer-events-none">
+<div class="h-80 overflow-hidden lyric-mask">
+<div :style="{transform:`translateY(-${index*40}px)`}"
+class="text-center space-y-4 transition-all duration-300">
 
-        <!-- 搜索结果 -->
-        <div class="glass-modern rounded-2xl overflow-hidden">
-            <div class="px-6 py-5 border-b border-white/10 flex justify-between items-center">
-                <span class="text-white font-semibold text-lg">搜索结果</span>
-            </div>
-            <div v-if="loading" class="p-16 text-center">
-                <div class="loader mx-auto mb-4"></div>
-                <p class="text-white/60">正在寻找音乐...</p>
-            </div>
-            <div v-else class="divide-y divide-white/10 max-h-[550px] overflow-y-auto song-list">
-                <div v-for="(song, idx) in songs" :key="song.id" @click="playSong(song)"
-                    class="song-item p-4 flex items-center gap-4 cursor-pointer"
-                    :class="currentSong && currentSong.id === song.id ? 'song-playing' : ''">
-                    <div class="text-white/50 w-10 text-center">{{ idx+1 }}</div>
-                    <img :src="song.artwork" class="w-12 h-12 rounded-lg object-cover" @error="song.artwork = defaultCover">
-                    <div class="flex-1 min-w-0">
-                        <div class="text-white font-semibold truncate">{{ song.title }}</div>
-                        <div class="text-white/50 text-sm truncate">{{ song.artist }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div v-for="(l,i) in lyrics"
+:class="i===index ? 'text-xl font-bold text-white' : 'text-white/30'">
+{{l.text}}
+</div>
 
-        <audio ref="audioPlayer" :src="currentPlayUrl" preload="auto" 
-            @timeupdate="onTimeUpdate" @canplay="onCanPlay" @error="onPlayError">
-    </div>
+</div>
+</div>
+</div>
 
-    <script>
-        const { createApp, ref, nextTick } = Vue;
-        const PROXY = 'https://proxy.api.030101.xyz/';
-        const urlCache = new Map();
-        const lyricCache = new Map();
-        const defaultCover = 'https://y.gtimg.cn/music/photo_new/T002R300x300M000000MkMni19ClKG.jpg';
+<!-- 播放器 -->
+<div v-if="current" class="fixed bottom-0 left-0 right-0 bg-black/60 p-3 border-t border-white/10">
 
-        const headers = {
-            referer: "httpsy://y.qq.com",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/106.0.0.0 Safari/537.36"
-        };
+<div class="flex justify-between items-center">
+<div>
+<div class="text-sm">{{current.title}}</div>
+<div class="text-xs text-white/50">{{current.artist}}</div>
+</div>
 
-        function formatMusicItem(item) {
-            const albummid = item.album?.mid;
-            return {
-                id: item.id,
-                songmid: item.mid,
-                title: item.title,
-                artist: item.singer?.map(s=>s.name).join("、") || "未知歌手",
-                artwork: albummid ? `https://y.gtimg.cn/music/photo_new/T002R800x800M000${albummid}.jpg` : defaultCover
-            };
-        }
+<div class="flex gap-3 items-center">
+<button @click="fav(current)">❤️</button>
+<button @click="toggle" class="text-lg">{{playing?'⏸':'▶'}}</button>
+</div>
+</div>
 
-        // 极速歌词解析
-        function parseLyric(lrc) {
-            if(!lrc) return [];
-            const reg = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
-            return lrc.split('\n').map(line=>{
-                const m = line.match(reg);
-                if(!m) return null;
-                const t = parseInt(m[1])*60 + parseInt(m[2]) + parseInt(m[3])/1000;
-                return {time:t, text:line.replace(reg,"").trim()}
-            }).filter(Boolean);
-        }
+<input type="range" min="0" max="100"
+v-model="progress" @input="seek"
+class="w-full mt-2">
 
-        // 多接口极速并发请求歌词 —— 实现播放瞬间出词
-        async function getLyricFast(songmid, title, artist) {
-            const key = `${songmid}${title}`;
-            if(lyricCache.has(key)) return lyricCache.get(key);
-            const tasks = [
-                axios.get(`${PROXY}https://oiapi.net/api/QQMusicLyric?songmid=${songmid}`),
-                axios.get(`${PROXY}https://lrclib.net/api/search?q=${encodeURIComponent(title+" "+artist)}`)
-            ];
-            const res = await Promise.allSettled(tasks);
-            let raw = "";
-            if(res[0].status==="fulfilled" && res[0].value.data?.lyric) raw = res[0].value.data.lyric;
-            if(!raw && res[1].status==="fulfilled" && res[1].value.data?.[0]?.syncedLyrics) raw = res[1].value.data[0].syncedLyrics;
-            const list = parseLyric(raw);
-            lyricCache.set(key, list);
-            return list;
-        }
+</div>
 
-        async function getPlayUrl(mid) {
-            if(urlCache.has(mid)) return urlCache.get(mid);
-            const res = await axios.get(`${PROXY}https://api.xunhuisi.store/API/QQMusic/Song.php?mid=${mid}`);
-            if(res.data?.code===200) urlCache.set(mid, res.data.music_url);
-            return res.data?.music_url || "";
-        }
+<audio ref="audio" :src="url"
+@timeupdate="update"
+@error="onError"></audio>
 
-        async function searchMusic(key) {
-            const data = {req_1:{method:"DoSearchForQQMusicDesktop",module:"music.search.SearchCgiService",param:{query:key,num_per_page:25,page_num:1}}};
-            const res = await axios.post(`${PROXY}https://u.y.qq.com/cgi-bin/musicu.fcg`, data, {headers});
-            return res.data?.req_1?.data?.body?.song?.list?.map(formatMusicItem) || [];
-        }
+</div>
 
-        createApp({
-            setup(){
-                const keyword = ref("");
-                const songs = ref([]);
-                const loading = ref(false);
-                const currentSong = ref(null);
-                const currentPlayUrl = ref("");
-                const lyrics = ref([]);
-                const currentLyricIndex = ref(0);
-                const audioPlayer = ref(null);
-                const lyricContainer = ref(null);
-                const isPlaying = ref(false);
+<script>
+const {createApp,ref,onMounted}=Vue
 
-                // 搜索
-                const searchMusicFn = async ()=>{
-                    if(!keyword.value.trim()) return;
-                    loading.value = true;
-                    songs.value = await searchMusic(keyword.value);
-                    loading.value = false;
-                };
+// 多代理（提高成功率）
+const PROXIES=[
+"https://api.allorigins.win/raw?url=",
+"https://cors.isomorphic-git.org/"
+]
 
-                // 播放 + 秒加载歌词
-                const playSong = async (song)=>{
-                    currentSong.value = song;
-                    lyrics.value = [];
-                    currentLyricIndex.value = 0;
-                    isPlaying.value = false;
-                    // 歌词优先并发加载，做到打开就有
-                    const lyricP = getLyricFast(song.songmid, song.title, song.artist);
-                    const url = await getPlayUrl(song.songmid);
-                    currentPlayUrl.value = url;
-                    // 直接赋值歌词，不等待，极致提速
-                    lyrics.value = await lyricP;
-                    nextTick(()=>{
-                        if(audioPlayer.value){
-                            audioPlayer.value.play().then(()=>isPlaying.value=true);
-                        }
-                    });
-                };
+// 请求封装
+async function req(url,method="GET",data=null){
+for(let p of PROXIES){
+try{
+let full=p+encodeURIComponent(url)
+let r=await axios({url:full,method,data})
+if(r.data)return r
+}catch{}
+}
+throw "fail"
+}
 
-                // 播放暂停
-                const togglePlay = ()=>{
-                    if(!audioPlayer.value) return;
-                    if(isPlaying.value){
-                        audioPlayer.value.pause();
-                        isPlaying.value = false;
-                    }else{
-                        audioPlayer.value.play();
-                        isPlaying.value = true;
-                    }
-                };
+// 数据格式化
+function format(v){
+return{
+songmid:v.mid,
+title:v.title,
+artist:v.singer?.map(s=>s.name).join("/")||"未知",
+artwork:v.album?.mid
+?`https://y.gtimg.cn/music/photo_new/T002R300x300M000${v.album.mid}.jpg`
+:"https://via.placeholder.com/300"
+}
+}
 
-                // 歌词同步
-                const onTimeUpdate = ()=>{
-                    if(!lyrics.value.length) return;
-                    const t = audioPlayer.value.currentTime;
-                    let idx = 0;
-                    for(let i=0;i<lyrics.value.length;i++){
-                        if(t >= lyrics.value[i].time) idx = i;
-                    }
-                    currentLyricIndex.value = idx;
-                    if(lyricContainer.value){
-                        lyricContainer.value.scrollTop = idx * 40 - lyricContainer.value.clientHeight / 2;
-                    }
-                };
+createApp({
+setup(){
 
-                const onCanPlay = ()=>{};
-                const onPlayError = ()=>{};
+const keyword=ref("")
+const songs=ref([])
+const hotSongs=ref([])
+const current=ref(null)
+const url=ref("")
+const playing=ref(false)
+const audio=ref(null)
+const progress=ref(0)
 
-                return {
-                    keyword,songs,loading,currentSong,currentPlayUrl,
-                    lyrics,currentLyricIndex,audioPlayer,lyricContainer,isPlaying,
-                    defaultCover,searchMusic:searchMusicFn,playSong,togglePlay,
-                    onTimeUpdate,onCanPlay,onPlayError
-                }
-            }
-        }).mount('#app');
-    </script>
+// 歌词
+const lyrics=ref([])
+const index=ref(0)
+
+// 收藏
+const favs=ref(JSON.parse(localStorage.getItem("fav")||"[]"))
+
+function saveFav(){
+localStorage.setItem("fav",JSON.stringify(favs.value))
+}
+
+function fav(s){
+if(!favs.value.find(i=>i.songmid===s.songmid)){
+favs.value.push(s)
+saveFav()
+alert("已收藏")
+}
+}
+
+// 解析歌词
+function parse(lrc){
+return lrc.split("\n").map(line=>{
+let m=line.match(/\[(\d+):(\d+\.\d+)\]/)
+if(!m) return null
+return {
+time: parseInt(m[1])*60 + parseFloat(m[2]),
+text: line.replace(/\[.*?\]/,"")
+}
+}).filter(Boolean)
+}
+
+// 获取歌词
+async function getLyric(s){
+try{
+let r=await req(`https://oiapi.net/api/QQMusicLyric?songmid=${s.songmid}`)
+return parse(r.data.lyric||"")
+}catch{
+return []
+}
+}
+
+// 播放
+async function play(s){
+current.value=s
+lyrics.value=[]
+index.value=0
+playing.value=false
+
+// 歌词并发加载
+getLyric(s).then(l=>lyrics.value=l)
+
+// 播放地址
+let apis=[
+`https://api.xunhuisi.store/API/QQMusic/Song.php?mid=${s.songmid}`,
+`https://api.vkeys.cn/v2/music/tencent/url?mid=${s.songmid}`
+]
+
+for(let a of apis){
+try{
+let r=await req(a)
+let u=r.data.music_url || r.data.data?.url
+if(u){
+url.value=u
+break
+}
+}catch{}
+}
+
+setTimeout(()=>{
+audio.value.play().then(()=>{
+playing.value=true
+}).catch(()=>{
+alert("播放失败，换一首试试")
+})
+},300)
+}
+
+// 播放控制
+function toggle(){
+if(!audio.value)return
+if(playing.value){
+audio.value.pause()
+playing.value=false
+}else{
+audio.value.play()
+playing.value=true
+}
+}
+
+// 时间更新（进度 + 歌词）
+function update(){
+if(audio.value.duration){
+progress.value = (audio.value.currentTime / audio.value.duration) * 100
+}
+
+let t = audio.value.currentTime
+for(let i=0;i<lyrics.value.length;i++){
+if(t >= lyrics.value[i].time){
+index.value = i
+}
+}
+}
+
+// 拖动进度
+function seek(){
+audio.value.currentTime = (progress.value/100) * audio.value.duration
+}
+
+// 搜索
+async function search(){
+if(!keyword.value.trim()) return
+try{
+let data={
+req_1:{
+method:"DoSearchForQQMusicDesktop",
+module:"music.search.SearchCgiService",
+param:{query:keyword.value,page_num:1,num_per_page:20}
+}}
+let r=await req("https://u.y.qq.com/cgi-bin/musicu.fcg","POST",data)
+songs.value = r.data.req_1.data.body.song.list.map(format)
+}catch{
+alert("搜索失败")
+}
+}
+
+// 热门榜
+async function hot(){
+try{
+let data={
+req_1:{
+module:"musicToplist.ToplistInfoServer",
+method:"GetDetail",
+param:{toplist_id:26,num:20}
+}}
+let r=await req("https://u.y.qq.com/cgi-bin/musicu.fcg","POST",data)
+hotSongs.value = r.data.req_1.data.songInfoList.map(format)
+}catch{
+console.log("榜单加载失败")
+}
+}
+
+// 播放错误
+function onError(){
+alert("播放失败，可能接口失效")
+}
+
+onMounted(hot)
+
+return{
+keyword,songs,hotSongs,current,url,playing,progress,audio,
+search,play,toggle,update,seek,
+lyrics,index,fav,onError
+}
+}
+}).mount("#app")
+</script>
+
 </body>
 </html>
